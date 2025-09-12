@@ -47,6 +47,26 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        cooling: {
+          DEFAULT: "hsl(var(--cooling))",
+          light: "hsl(var(--cooling-light))",
+          dark: "hsl(var(--cooling-dark))",
+        },
+        heating: {
+          DEFAULT: "hsl(var(--heating))",
+          light: "hsl(var(--heating-light))",
+          dark: "hsl(var(--heating-dark))",
+        },
+        energy: {
+          efficient: "hsl(var(--energy-efficient))",
+          warning: "hsl(var(--energy-warning))",
+          critical: "hsl(var(--energy-critical))",
+        },
+        temperature: {
+          cold: "hsl(var(--temperature-cold))",
+          neutral: "hsl(var(--temperature-neutral))",
+          hot: "hsl(var(--temperature-hot))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -84,6 +104,17 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "pulse-soft": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "fade-in": "fadeIn 0.5s ease-out",
+      },
+      backgroundImage: {
+        'gradient-cooling': 'var(--gradient-cooling)',
+        'gradient-dashboard': 'var(--gradient-dashboard)',
+        'gradient-card': 'var(--gradient-card)',
+      },
+      boxShadow: {
+        'cool': 'var(--shadow-cool)',
+        'elevated': 'var(--shadow-elevated)',
       },
     },
   },
