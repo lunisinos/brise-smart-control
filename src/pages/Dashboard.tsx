@@ -1,6 +1,7 @@
 import { useState } from "react";
 import StatusCard from "@/components/dashboard/StatusCard";
 import EquipmentCard from "@/components/dashboard/EquipmentCard";
+import EquipmentControlDialog from "@/components/dashboard/EquipmentControlDialog";
 import { mockEquipments, mockLocations, mockAlerts } from "@/data/mockData";
 import { 
   Wind, 
@@ -16,6 +17,8 @@ import { useToast } from "@/hooks/use-toast";
 
 const Dashboard = () => {
   const [equipments, setEquipments] = useState(mockEquipments);
+  const [selectedEquipment, setSelectedEquipment] = useState<any>(null);
+  const [isControlDialogOpen, setIsControlDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const totalEquipments = equipments.length;
@@ -49,10 +52,16 @@ const Dashboard = () => {
 
   const handleControlEquipment = (id: string) => {
     const equipment = equipments.find(eq => eq.id === id);
-    toast({
-      title: "Controle Remoto",
-      description: `Abrindo controle para ${equipment?.name}`,
-    });
+    if (equipment) {
+      setSelectedEquipment(equipment);
+      setIsControlDialogOpen(true);
+    }
+  };
+
+  const handleEquipmentUpdate = (id: string, updates: any) => {
+    setEquipments(prev => prev.map(eq => 
+      eq.id === id ? { ...eq, ...updates } : eq
+    ));
   };
 
   return (
@@ -186,6 +195,13 @@ const Dashboard = () => {
           </Card>
         </div>
       </div>
+
+      <EquipmentControlDialog
+        equipment={selectedEquipment}
+        isOpen={isControlDialogOpen}
+        onClose={() => setIsControlDialogOpen(false)}
+        onUpdate={handleEquipmentUpdate}
+      />
     </div>
   );
 };
