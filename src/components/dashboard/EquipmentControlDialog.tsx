@@ -55,6 +55,7 @@ const EquipmentControlDialog = ({
   const [localMode, setLocalMode] = useState(equipment?.mode || "cool");
   const [fanSpeed, setFanSpeed] = useState(2);
   const [autoMode, setAutoMode] = useState(false);
+  const [setpointsEnabled, setSetpointsEnabled] = useState(true);
   const [minTemp, setMinTemp] = useState([18]);
   const [maxTemp, setMaxTemp] = useState([26]);
 
@@ -129,15 +130,25 @@ const EquipmentControlDialog = ({
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
-                <Label htmlFor="auto-mode">Modo Automático</Label>
+                <Label htmlFor="setpoints-enabled">Usar Setpoints</Label>
                 <Switch
-                  id="auto-mode"
-                  checked={autoMode}
-                  onCheckedChange={setAutoMode}
+                  id="setpoints-enabled"
+                  checked={setpointsEnabled}
+                  onCheckedChange={setSetpointsEnabled}
                 />
               </div>
 
-              <div className="space-y-4">
+              <div className={`space-y-4 ${!setpointsEnabled ? 'opacity-50 pointer-events-none' : ''}`}>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="auto-mode">Modo Automático</Label>
+                  <Switch
+                    id="auto-mode"
+                    checked={autoMode}
+                    onCheckedChange={setAutoMode}
+                    disabled={!setpointsEnabled}
+                  />
+                </div>
+
                 <div>
                   <Label className="text-sm font-medium mb-2 block">
                     Temperatura Mínima: {minTemp[0]}°C
@@ -149,6 +160,7 @@ const EquipmentControlDialog = ({
                     min={16}
                     step={1}
                     className="w-full"
+                    disabled={!setpointsEnabled}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     Se menor que {minTemp[0]}°C, aquecerá até atingir esta temperatura
@@ -166,6 +178,7 @@ const EquipmentControlDialog = ({
                     min={16}
                     step={1}
                     className="w-full"
+                    disabled={!setpointsEnabled}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     Se maior que {maxTemp[0]}°C, resfriará até atingir esta temperatura
