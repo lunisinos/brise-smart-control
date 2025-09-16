@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Clock, Thermometer, Users, Calendar, Settings2 } from "lucide-react";
+import TimeRoutineDialog from "@/components/automations/TimeRoutineDialog";
 
 const Automations = () => {
   const automations = [
@@ -63,12 +64,14 @@ const Automations = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-energy-efficient/20 bg-gradient-to-br from-energy-efficient/5 to-transparent">
-          <CardContent className="flex flex-col items-center justify-center h-32 space-y-2">
-            <Clock className="h-8 w-8 text-energy-efficient" />
-            <p className="text-sm font-medium">Rotina por Horário</p>
-          </CardContent>
-        </Card>
+        <TimeRoutineDialog>
+          <Card className="border-energy-efficient/20 bg-gradient-to-br from-energy-efficient/5 to-transparent cursor-pointer hover:shadow-elevated transition-shadow">
+            <CardContent className="flex flex-col items-center justify-center h-32 space-y-2">
+              <Clock className="h-8 w-8 text-energy-efficient" />
+              <p className="text-sm font-medium">Rotina por Horário</p>
+            </CardContent>
+          </Card>
+        </TimeRoutineDialog>
 
         <Card className="border-cooling/20 bg-gradient-to-br from-cooling/5 to-transparent">
           <CardContent className="flex flex-col items-center justify-center h-32 space-y-2">
