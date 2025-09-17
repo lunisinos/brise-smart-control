@@ -15,6 +15,8 @@ interface TimeRoutineDialogProps {
 
 const TimeRoutineDialog = ({ children }: TimeRoutineDialogProps) => {
   const [routineName, setRoutineName] = useState("");
+  const [timeAutomation, setTimeAutomation] = useState(true);
+  const [temperatureChange, setTemperatureChange] = useState(false);
   const [startTime, setStartTime] = useState("22:00");
   const [endTime, setEndTime] = useState("06:00");
   const [selectedDays, setSelectedDays] = useState<string[]>(["saturday", "sunday"]);
@@ -86,6 +88,35 @@ const TimeRoutineDialog = ({ children }: TimeRoutineDialogProps) => {
               value={routineName}
               onChange={(e) => setRoutineName(e.target.value)}
             />
+          </div>
+
+          {/* Configurações de Automação */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="space-y-1">
+                <Label className="text-sm font-medium">Automação por Horário</Label>
+                <p className="text-xs text-muted-foreground">
+                  Ativar ou desativar equipamentos em horários específicos
+                </p>
+              </div>
+              <Switch
+                checked={timeAutomation}
+                onCheckedChange={setTimeAutomation}
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="space-y-1">
+                <Label className="text-sm font-medium">Mudança de Temperatura</Label>
+                <p className="text-xs text-muted-foreground">
+                  Ajustar temperatura automaticamente baseado no horário
+                </p>
+              </div>
+              <Switch
+                checked={temperatureChange}
+                onCheckedChange={setTemperatureChange}
+              />
+            </div>
           </div>
 
           {/* Horários */}
