@@ -175,7 +175,7 @@ const TimeRoutineDialog = ({ children }: TimeRoutineDialogProps) => {
             />
           </div>
 
-          {/* Configurações de Automação */}
+          {/* Automação por Horário */}
           <div className="space-y-4">
             <div className="flex items-center justify-between p-3 border rounded-lg">
               <div className="space-y-1">
@@ -190,6 +190,89 @@ const TimeRoutineDialog = ({ children }: TimeRoutineDialogProps) => {
               />
             </div>
 
+            {/* Horários */}
+            <div className={`space-y-4 ${!timeAutomation ? 'opacity-50 pointer-events-none' : ''}`}>
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Horários de Funcionamento
+                </Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addTimeSlot}
+                  disabled={!timeAutomation}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Adicionar Horário
+                </Button>
+              </div>
+              {timeSlots.map((slot, index) => (
+                <Card key={slot.id} className="p-4">
+                  <div className="flex items-center gap-4">
+                    <div className="grid grid-cols-2 gap-4 flex-1">
+                      <div className="space-y-2">
+                        <Label htmlFor={`start-time-${slot.id}`}>Horário de Início</Label>
+                        <Input
+                          id={`start-time-${slot.id}`}
+                          type="time"
+                          value={slot.startTime}
+                          onChange={(e) => updateTimeSlot(slot.id, 'startTime', e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`end-time-${slot.id}`}>Horário de Término</Label>
+                        <Input
+                          id={`end-time-${slot.id}`}
+                          type="time"
+                          value={slot.endTime}
+                          onChange={(e) => updateTimeSlot(slot.id, 'endTime', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    {timeSlots.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeTimeSlot(slot.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
+
+            {/* Dias da Semana */}
+            <div className={`space-y-3 ${!timeAutomation ? 'opacity-50 pointer-events-none' : ''}`}>
+              <Label className="flex items-center gap-2">
+                <CalendarDays className="h-4 w-4" />
+                Dias da Semana
+              </Label>
+              <div className="flex flex-wrap gap-2">
+                {daysOfWeek.map((day) => (
+                  <Badge
+                    key={day.id}
+                    variant={selectedDays.includes(day.id) ? "default" : "outline"}
+                    className={`cursor-pointer px-3 py-1 ${
+                      selectedDays.includes(day.id) 
+                        ? "bg-cooling text-white hover:bg-cooling-dark" 
+                        : "hover:bg-cooling/10"
+                    }`}
+                    onClick={() => toggleDay(day.id)}
+                  >
+                    {day.label}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Automação de Temperatura */}
+          <div className="space-y-4">
             <div className="flex items-center justify-between p-3 border rounded-lg">
               <div className="space-y-1">
                 <Label className="text-sm font-medium">Mudança de Temperatura</Label>
@@ -202,109 +285,6 @@ const TimeRoutineDialog = ({ children }: TimeRoutineDialogProps) => {
                 onCheckedChange={setTemperatureChange}
               />
             </div>
-          </div>
-
-          {/* Horários */}
-          <div className={`space-y-4 ${!timeAutomation ? 'opacity-50 pointer-events-none' : ''}`}>
-            <div className="flex items-center justify-between">
-              <Label className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Horários de Funcionamento
-              </Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={addTimeSlot}
-                disabled={!timeAutomation}
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Adicionar Horário
-              </Button>
-            </div>
-            {timeSlots.map((slot, index) => (
-              <Card key={slot.id} className="p-4">
-                <div className="flex items-center gap-4">
-                  <div className="grid grid-cols-2 gap-4 flex-1">
-                    <div className="space-y-2">
-                      <Label htmlFor={`start-time-${slot.id}`}>Horário de Início</Label>
-                      <Input
-                        id={`start-time-${slot.id}`}
-                        type="time"
-                        value={slot.startTime}
-                        onChange={(e) => updateTimeSlot(slot.id, 'startTime', e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`end-time-${slot.id}`}>Horário de Término</Label>
-                      <Input
-                        id={`end-time-${slot.id}`}
-                        type="time"
-                        value={slot.endTime}
-                        onChange={(e) => updateTimeSlot(slot.id, 'endTime', e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  {timeSlots.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeTimeSlot(slot.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              </Card>
-            ))}
-          </div>
-
-          {/* Dias da Semana */}
-          <div className="space-y-3">
-            <Label className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4" />
-              Dias da Semana
-            </Label>
-            <div className="flex flex-wrap gap-2">
-              {daysOfWeek.map((day) => (
-                <Badge
-                  key={day.id}
-                  variant={selectedDays.includes(day.id) ? "default" : "outline"}
-                  className={`cursor-pointer px-3 py-1 ${
-                    selectedDays.includes(day.id) 
-                      ? "bg-cooling text-white hover:bg-cooling-dark" 
-                      : "hover:bg-cooling/10"
-                  }`}
-                  onClick={() => toggleDay(day.id)}
-                >
-                  {day.label}
-                </Badge>
-              ))}
-            </div>
-          </div>
-
-          {/* Ação */}
-          <div className="space-y-3">
-            <Label>Ação a ser Executada</Label>
-            <Select value={action} onValueChange={setAction}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione uma ação" />
-              </SelectTrigger>
-              <SelectContent>
-                {actions.map((actionItem) => {
-                  const IconComponent = actionItem.icon;
-                  return (
-                    <SelectItem key={actionItem.id} value={actionItem.id}>
-                      <div className="flex items-center gap-2">
-                        <IconComponent className="h-4 w-4" />
-                        {actionItem.label}
-                      </div>
-                    </SelectItem>
-                  );
-                })}
-              </SelectContent>
-            </Select>
           </div>
 
           {/* Configuração de Temperatura */}
