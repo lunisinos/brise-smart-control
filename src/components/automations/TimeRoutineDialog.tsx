@@ -7,20 +7,37 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Clock, CalendarDays, Power, Settings } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Clock, CalendarDays, Power, Settings, Plus, ChevronDown, Trash2, Thermometer } from "lucide-react";
 
 interface TimeRoutineDialogProps {
   children: React.ReactNode;
+}
+
+interface TimeSlot {
+  id: string;
+  startTime: string;
+  endTime: string;
+}
+
+interface TemperatureRule {
+  id: string;
+  startTime: string;
+  endTime: string;
+  temperature: number;
 }
 
 const TimeRoutineDialog = ({ children }: TimeRoutineDialogProps) => {
   const [routineName, setRoutineName] = useState("");
   const [timeAutomation, setTimeAutomation] = useState(true);
   const [temperatureChange, setTemperatureChange] = useState(false);
-  const [startTime, setStartTime] = useState("22:00");
-  const [endTime, setEndTime] = useState("06:00");
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([
+    { id: "1", startTime: "22:00", endTime: "06:00" }
+  ]);
+  const [temperatureRules, setTemperatureRules] = useState<TemperatureRule[]>([]);
   const [selectedDays, setSelectedDays] = useState<string[]>(["saturday", "sunday"]);
   const [selectedEquipments, setSelectedEquipments] = useState<string[]>([]);
+  const [selectedEnvironments, setSelectedEnvironments] = useState<string[]>([]);
   const [action, setAction] = useState("turn_off");
 
   const daysOfWeek = [
@@ -38,6 +55,15 @@ const TimeRoutineDialog = ({ children }: TimeRoutineDialogProps) => {
     { id: "ac-2", name: "Ar Condicionado - Sala 102" },
     { id: "ac-3", name: "Ar Condicionado - Auditório" },
     { id: "ac-4", name: "Ar Condicionado - Recepção" }
+  ];
+
+  const environments = [
+    { id: "sala-101", name: "Sala 101" },
+    { id: "sala-102", name: "Sala 102" },
+    { id: "auditorio", name: "Auditório" },
+    { id: "recepcao", name: "Recepção" },
+    { id: "almoxarifado", name: "Almoxarifado" },
+    { id: "cozinha", name: "Cozinha" }
   ];
 
   const actions = [
@@ -60,6 +86,65 @@ const TimeRoutineDialog = ({ children }: TimeRoutineDialogProps) => {
         ? prev.filter(e => e !== equipmentId)
         : [...prev, equipmentId]
     );
+  };
+
+  const toggleEnvironment = (environmentId: string) => {
+    setSelectedEnvironments(prev => 
+      prev.includes(environmentId) 
+        ? prev.filter(e => e !== environmentId)
+        : [...prev, environmentId]
+    );
+  };
+
+  const addTimeSlot = () => {
+    const newTimeSlot: TimeSlot = {
+      id: Date.now().toString(),
+      startTime: "09:00",
+      endTime: "17:00"
+    };
+    setTimeSlots(prev => [...prev, newTimeSlot]);
+  };
+
+  const removeTimeSlot = (id: string) => {
+    if (timeSlots.length > 1) {
+      setTimeSlots(prev => prev.filter(slot => slot.id !== id));
+      setTemperatureRules(prev => prev.filter(rule => 
+        timeSlots.some(slot => 
+          slot.id !== id && 
+          rule.startTime >= slot.startTime && 
+          rule.endTime <= slot.endTime
+        )
+      ));
+    }
+  };
+
+  const updateTimeSlot = (id: string, field: 'startTime' | 'endTime', value: string) => {
+    setTimeSlots(prev => prev.map(slot => 
+      slot.id === id ? { ...slot, [field]: value } : slot
+    ));
+  };
+
+  const addTemperatureRule = () => {
+    if (timeSlots.length > 0) {
+      const firstSlot = timeSlots[0];
+      const newRule: TemperatureRule = {
+        id: Date.now().toString(),
+        startTime: firstSlot.startTime,
+        endTime: firstSlot.endTime,
+        temperature: 23
+      };
+      setTemperatureRules(prev => [...prev, newRule]);
+    }
+  };
+
+  const removeTemperatureRule = (id: string) => {
+    setTemperatureRules(prev => prev.filter(rule => rule.id !== id));
+  };
+
+  const updateTemperatureRule = (id: string, field: 'startTime' | 'endTime' | 'temperature', value: string | number) => {
+    setTemperatureRules(prev => prev.map(rule => 
+      rule.id === id ? { ...rule, [field]: value } : rule
+    ));
   };
 
   return (
@@ -120,25 +205,59 @@ const TimeRoutineDialog = ({ children }: TimeRoutineDialogProps) => {
           </div>
 
           {/* Horários */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="start-time">Horário de Início</Label>
-              <Input
-                id="start-time"
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-              />
+          <div className={`space-y-4 ${!timeAutomation ? 'opacity-50 pointer-events-none' : ''}`}>
+            <div className="flex items-center justify-between">
+              <Label className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Horários de Funcionamento
+              </Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addTimeSlot}
+                disabled={!timeAutomation}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Adicionar Horário
+              </Button>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="end-time">Horário de Término</Label>
-              <Input
-                id="end-time"
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-              />
-            </div>
+            {timeSlots.map((slot, index) => (
+              <Card key={slot.id} className="p-4">
+                <div className="flex items-center gap-4">
+                  <div className="grid grid-cols-2 gap-4 flex-1">
+                    <div className="space-y-2">
+                      <Label htmlFor={`start-time-${slot.id}`}>Horário de Início</Label>
+                      <Input
+                        id={`start-time-${slot.id}`}
+                        type="time"
+                        value={slot.startTime}
+                        onChange={(e) => updateTimeSlot(slot.id, 'startTime', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`end-time-${slot.id}`}>Horário de Término</Label>
+                      <Input
+                        id={`end-time-${slot.id}`}
+                        type="time"
+                        value={slot.endTime}
+                        onChange={(e) => updateTimeSlot(slot.id, 'endTime', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  {timeSlots.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => removeTimeSlot(slot.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </Card>
+            ))}
           </div>
 
           {/* Dias da Semana */}
@@ -188,6 +307,100 @@ const TimeRoutineDialog = ({ children }: TimeRoutineDialogProps) => {
             </Select>
           </div>
 
+          {/* Configuração de Temperatura */}
+          {temperatureChange && (
+            <div className={`space-y-4 ${!temperatureChange ? 'opacity-50 pointer-events-none' : ''}`}>
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-2">
+                  <Thermometer className="h-4 w-4" />
+                  Configuração de Temperatura por Horário
+                </Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addTemperatureRule}
+                  disabled={!temperatureChange || timeSlots.length === 0}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Adicionar Regra
+                </Button>
+              </div>
+              {temperatureRules.map((rule) => (
+                <Card key={rule.id} className="p-4">
+                  <div className="flex items-center gap-4">
+                    <div className="grid grid-cols-3 gap-4 flex-1">
+                      <div className="space-y-2">
+                        <Label htmlFor={`temp-start-${rule.id}`}>Início</Label>
+                        <Input
+                          id={`temp-start-${rule.id}`}
+                          type="time"
+                          value={rule.startTime}
+                          onChange={(e) => updateTemperatureRule(rule.id, 'startTime', e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`temp-end-${rule.id}`}>Fim</Label>
+                        <Input
+                          id={`temp-end-${rule.id}`}
+                          type="time"
+                          value={rule.endTime}
+                          onChange={(e) => updateTemperatureRule(rule.id, 'endTime', e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`temp-value-${rule.id}`}>Temperatura (°C)</Label>
+                        <Input
+                          id={`temp-value-${rule.id}`}
+                          type="number"
+                          min="16"
+                          max="30"
+                          value={rule.temperature}
+                          onChange={(e) => updateTemperatureRule(rule.id, 'temperature', parseInt(e.target.value))}
+                        />
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => removeTemperatureRule(rule.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {/* Seleção de Ambientes */}
+          <div className="space-y-3">
+            <Label>Ambientes</Label>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full justify-between">
+                  {selectedEnvironments.length === 0 
+                    ? "Selecionar ambientes" 
+                    : `${selectedEnvironments.length} ambiente(s) selecionado(s)`
+                  }
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-full min-w-[400px] bg-background border border-border z-50">
+                {environments.map((environment) => (
+                  <DropdownMenuCheckboxItem
+                    key={environment.id}
+                    checked={selectedEnvironments.includes(environment.id)}
+                    onCheckedChange={() => toggleEnvironment(environment.id)}
+                  >
+                    {environment.name}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
           {/* Seleção de Equipamentos */}
           <div className="space-y-3">
             <Label>Equipamentos</Label>
@@ -215,16 +428,29 @@ const TimeRoutineDialog = ({ children }: TimeRoutineDialogProps) => {
           </div>
 
           {/* Resumo */}
-          {routineName && selectedDays.length > 0 && selectedEquipments.length > 0 && (
+          {routineName && selectedDays.length > 0 && (selectedEquipments.length > 0 || selectedEnvironments.length > 0) && (
             <Card className="bg-cooling/5 border-cooling/20">
               <CardContent className="p-4">
                 <h4 className="font-semibold text-sm mb-2">Resumo da Rotina:</h4>
                 <p className="text-sm text-muted-foreground">
-                  <strong>{routineName}</strong> será executada {selectedDays.length === 7 ? "todos os dias" : `nos dias: ${selectedDays.map(d => daysOfWeek.find(day => day.id === d)?.label).join(", ")}`} das <strong>{startTime}</strong> às <strong>{endTime}</strong>, 
-                  {action === "turn_off" && " desligando"} 
-                  {action === "turn_on" && " ligando"}
-                  {action === "set_temp" && " ajustando a temperatura de"}
-                  <strong> {selectedEquipments.length} equipamento(s)</strong>.
+                  <strong>{routineName}</strong> será executada {selectedDays.length === 7 ? "todos os dias" : `nos dias: ${selectedDays.map(d => daysOfWeek.find(day => day.id === d)?.label).join(", ")}`} 
+                  {timeSlots.length > 0 && (
+                    <>
+                      {timeSlots.map((slot, index) => (
+                        <span key={slot.id}>
+                          {index > 0 && " e "}das <strong>{slot.startTime}</strong> às <strong>{slot.endTime}</strong>
+                        </span>
+                      ))}
+                    </>
+                  )}
+                  {action === "turn_off" && ", desligando"} 
+                  {action === "turn_on" && ", ligando"}
+                  {action === "set_temp" && ", ajustando a temperatura de"}
+                  {selectedEnvironments.length > 0 && <strong> {selectedEnvironments.length} ambiente(s)</strong>}
+                  {selectedEquipments.length > 0 && <strong> {selectedEquipments.length} equipamento(s)</strong>}.
+                  {temperatureRules.length > 0 && (
+                    <span> Configuração de temperatura: {temperatureRules.length} regra(s) definida(s).</span>
+                  )}
                 </p>
               </CardContent>
             </Card>
@@ -235,7 +461,7 @@ const TimeRoutineDialog = ({ children }: TimeRoutineDialogProps) => {
           <Button variant="outline">Cancelar</Button>
           <Button 
             variant="control" 
-            disabled={!routineName || selectedDays.length === 0 || selectedEquipments.length === 0}
+            disabled={!routineName || selectedDays.length === 0 || (selectedEquipments.length === 0 && selectedEnvironments.length === 0)}
           >
             Criar Rotina
           </Button>
