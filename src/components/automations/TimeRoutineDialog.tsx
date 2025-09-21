@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
-import { Clock, CalendarDays, Power, Settings, Plus, ChevronDown, Trash2, Thermometer } from "lucide-react";
+import { Clock, CalendarDays, Power, Settings, Plus, ChevronDown, Trash2 } from "lucide-react";
 
 interface TimeRoutineDialogProps {
   children: React.ReactNode;
@@ -21,26 +21,17 @@ interface TimeSlot {
   endTime: string;
 }
 
-interface TemperatureRule {
-  id: string;
-  startTime: string;
-  endTime: string;
-  temperature: number;
-}
-
 interface DaySchedule {
   dayId: string;
   timeSlots: TimeSlot[];
-  temperatureRules: TemperatureRule[];
 }
 
 const TimeRoutineDialog = ({ children }: TimeRoutineDialogProps) => {
   const [routineName, setRoutineName] = useState("");
-  const [timeAutomation, setTimeAutomation] = useState(true);
-  const [temperatureChange, setTemperatureChange] = useState(false);
   const [daySchedules, setDaySchedules] = useState<DaySchedule[]>([]);
   const [selectedEquipments, setSelectedEquipments] = useState<string[]>([]);
   const [selectedEnvironments, setSelectedEnvironments] = useState<string[]>([]);
+  const [openAccordions, setOpenAccordions] = useState<string[]>([]);
 
   const daysOfWeek = [
     { id: "monday", label: "Seg", name: "Segunda-feira" },
@@ -72,14 +63,15 @@ const TimeRoutineDialog = ({ children }: TimeRoutineDialogProps) => {
     setDaySchedules(prev => {
       const existingDay = prev.find(day => day.dayId === dayId);
       if (existingDay) {
-        // Remove day if it exists
+        // Remove day if it exists and close accordion
+        setOpenAccordions(prev => prev.filter(id => id !== dayId));
         return prev.filter(day => day.dayId !== dayId);
       } else {
-        // Add day with default time slot
+        // Add day with default time slot and open accordion
+        setOpenAccordions(prev => [...prev, dayId]);
         return [...prev, {
           dayId,
-          timeSlots: [{ id: "1", startTime: "09:00", endTime: "17:00" }],
-          temperatureRules: []
+          timeSlots: [{ id: "1", startTime: "09:00", endTime: "17:00" }]
         }];
       }
     });
@@ -119,14 +111,7 @@ const TimeRoutineDialog = ({ children }: TimeRoutineDialogProps) => {
       if (day.dayId === dayId && day.timeSlots.length > 1) {
         return {
           ...day,
-          timeSlots: day.timeSlots.filter(slot => slot.id !== slotId),
-          temperatureRules: day.temperatureRules.filter(rule => 
-            day.timeSlots.some(slot => 
-              slot.id !== slotId && 
-              rule.startTime >= slot.startTime && 
-              rule.endTime <= slot.endTime
-            )
-          )
+          timeSlots: day.timeSlots.filter(slot => slot.id !== slotId)
         };
       }
       return day;
@@ -140,45 +125,6 @@ const TimeRoutineDialog = ({ children }: TimeRoutineDialogProps) => {
             ...day,
             timeSlots: day.timeSlots.map(slot => 
               slot.id === slotId ? { ...slot, [field]: value } : slot
-            )
-          }
-        : day
-    ));
-  };
-
-  const addTemperatureRule = (dayId: string) => {
-    const daySchedule = daySchedules.find(day => day.dayId === dayId);
-    if (daySchedule && daySchedule.timeSlots.length > 0) {
-      const firstSlot = daySchedule.timeSlots[0];
-      const newRule: TemperatureRule = {
-        id: Date.now().toString(),
-        startTime: firstSlot.startTime,
-        endTime: firstSlot.endTime,
-        temperature: 23
-      };
-      setDaySchedules(prev => prev.map(day => 
-        day.dayId === dayId
-          ? { ...day, temperatureRules: [...day.temperatureRules, newRule] }
-          : day
-      ));
-    }
-  };
-
-  const removeTemperatureRule = (dayId: string, ruleId: string) => {
-    setDaySchedules(prev => prev.map(day => 
-      day.dayId === dayId
-        ? { ...day, temperatureRules: day.temperatureRules.filter(rule => rule.id !== ruleId) }
-        : day
-    ));
-  };
-
-  const updateTemperatureRule = (dayId: string, ruleId: string, field: 'startTime' | 'endTime' | 'temperature', value: string | number) => {
-    setDaySchedules(prev => prev.map(day => 
-      day.dayId === dayId
-        ? {
-            ...day,
-            temperatureRules: day.temperatureRules.map(rule => 
-              rule.id === ruleId ? { ...rule, [field]: value } : rule
             )
           }
         : day
@@ -213,222 +159,116 @@ const TimeRoutineDialog = ({ children }: TimeRoutineDialogProps) => {
             />
           </div>
 
-          {/* Automação por Horário */}
+          {/* Configuração por Dia */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="space-y-1">
-                <Label className="text-sm font-medium">Automação por Horário</Label>
-                <p className="text-xs text-muted-foreground">
-                  Configurar horários específicos para cada dia da semana
-                </p>
-              </div>
-              <Switch
-                checked={timeAutomation}
-                onCheckedChange={setTimeAutomation}
-              />
-            </div>
-
-            {/* Configuração por Dia */}
-            <div className={`space-y-4 ${!timeAutomation ? 'opacity-50 pointer-events-none' : ''}`}>
-              <Label className="flex items-center gap-2">
-                <CalendarDays className="h-4 w-4" />
-                Configuração por Dia da Semana
-              </Label>
-              
-              <Accordion type="multiple" className="w-full">
-                {daysOfWeek.map((day) => {
-                  const daySchedule = daySchedules.find(schedule => schedule.dayId === day.id);
-                  const isSelected = !!daySchedule;
-                  
-                  return (
-                    <AccordionItem key={day.id} value={day.id}>
-                      <AccordionTrigger className="hover:no-underline">
-                        <div className="flex items-center justify-between w-full pr-4">
-                          <div className="flex items-center gap-3">
-                            <Badge
-                              variant={isSelected ? "default" : "outline"}
-                              className={`cursor-pointer px-3 py-1 ${
-                                isSelected 
-                                  ? "bg-cooling text-white" 
-                                  : "hover:bg-cooling/10"
-                              }`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleDaySchedule(day.id);
-                              }}
-                            >
-                              {day.label}
-                            </Badge>
-                            <span className="text-sm font-medium">{day.name}</span>
-                          </div>
-                          {isSelected && (
-                            <span className="text-xs text-muted-foreground">
-                              {daySchedule.timeSlots.length} horário(s) configurado(s)
-                            </span>
-                          )}
+            <Label className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4" />
+              Configuração por Dia da Semana
+            </Label>
+            
+            <Accordion type="multiple" className="w-full" value={openAccordions} onValueChange={setOpenAccordions}>
+              {daysOfWeek.map((day) => {
+                const daySchedule = daySchedules.find(schedule => schedule.dayId === day.id);
+                const isSelected = !!daySchedule;
+                
+                return (
+                  <AccordionItem key={day.id} value={day.id}>
+                    <AccordionTrigger className="hover:no-underline">
+                      <div className="flex items-center justify-between w-full pr-4">
+                        <div className="flex items-center gap-3">
+                          <Badge
+                            variant={isSelected ? "default" : "outline"}
+                            className={`cursor-pointer px-3 py-1 ${
+                              isSelected 
+                                ? "bg-cooling text-white" 
+                                : "hover:bg-cooling/10"
+                            }`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleDaySchedule(day.id);
+                            }}
+                          >
+                            {day.label}
+                          </Badge>
+                          <span className="text-sm font-medium">{day.name}</span>
                         </div>
-                      </AccordionTrigger>
-                      
-                      {isSelected && (
-                        <AccordionContent className="pt-4">
-                          <div className="space-y-4 pl-4">
-                            {/* Horários para este dia */}
-                            <div className="space-y-3">
-                              <div className="flex items-center justify-between">
-                                <Label className="flex items-center gap-2 text-sm">
-                                  <Clock className="h-4 w-4" />
-                                  Horários de Funcionamento
-                                </Label>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => addTimeSlot(day.id)}
-                                >
-                                  <Plus className="h-4 w-4 mr-1" />
-                                  Adicionar Horário
-                                </Button>
-                              </div>
-                              
-                              {daySchedule.timeSlots.map((slot) => (
-                                <Card key={slot.id} className="p-3">
-                                  <div className="flex items-center gap-4">
-                                    <div className="grid grid-cols-2 gap-4 flex-1">
-                                      <div className="space-y-2">
-                                        <Label htmlFor={`start-time-${day.id}-${slot.id}`} className="text-xs">
-                                          Horário de Início
-                                        </Label>
-                                        <Input
-                                          id={`start-time-${day.id}-${slot.id}`}
-                                          type="time"
-                                          value={slot.startTime}
-                                          onChange={(e) => updateTimeSlot(day.id, slot.id, 'startTime', e.target.value)}
-                                        />
-                                      </div>
-                                      <div className="space-y-2">
-                                        <Label htmlFor={`end-time-${day.id}-${slot.id}`} className="text-xs">
-                                          Horário de Término
-                                        </Label>
-                                        <Input
-                                          id={`end-time-${day.id}-${slot.id}`}
-                                          type="time"
-                                          value={slot.endTime}
-                                          onChange={(e) => updateTimeSlot(day.id, slot.id, 'endTime', e.target.value)}
-                                        />
-                                      </div>
-                                    </div>
-                                    {daySchedule.timeSlots.length > 1 && (
-                                      <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => removeTimeSlot(day.id, slot.id)}
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                    )}
-                                  </div>
-                                </Card>
-                              ))}
+                        {isSelected && (
+                          <span className="text-xs text-muted-foreground">
+                            {daySchedule.timeSlots.length} horário(s) configurado(s)
+                          </span>
+                        )}
+                      </div>
+                    </AccordionTrigger>
+                    
+                    {isSelected && (
+                      <AccordionContent className="pt-4">
+                        <div className="space-y-4 pl-4">
+                          {/* Horários para este dia */}
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <Label className="flex items-center gap-2 text-sm">
+                                <Clock className="h-4 w-4" />
+                                Horários de Funcionamento
+                              </Label>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => addTimeSlot(day.id)}
+                              >
+                                <Plus className="h-4 w-4 mr-1" />
+                                Adicionar Horário
+                              </Button>
                             </div>
-
-                            {/* Configuração de Temperatura para este dia */}
-                            {temperatureChange && (
-                              <div className="space-y-3 pt-2 border-t">
-                                <div className="flex items-center justify-between">
-                                  <Label className="flex items-center gap-2 text-sm">
-                                    <Thermometer className="h-4 w-4" />
-                                    Configuração de Temperatura
-                                  </Label>
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => addTemperatureRule(day.id)}
-                                    disabled={daySchedule.timeSlots.length === 0}
-                                  >
-                                    <Plus className="h-4 w-4 mr-1" />
-                                    Adicionar Regra
-                                  </Button>
-                                </div>
-                                
-                                {daySchedule.temperatureRules.map((rule) => (
-                                  <Card key={rule.id} className="p-3 bg-muted/30">
-                                    <div className="flex items-center gap-4">
-                                      <div className="grid grid-cols-3 gap-4 flex-1">
-                                        <div className="space-y-2">
-                                          <Label htmlFor={`temp-start-${day.id}-${rule.id}`} className="text-xs">
-                                            Início
-                                          </Label>
-                                          <Input
-                                            id={`temp-start-${day.id}-${rule.id}`}
-                                            type="time"
-                                            value={rule.startTime}
-                                            onChange={(e) => updateTemperatureRule(day.id, rule.id, 'startTime', e.target.value)}
-                                          />
-                                        </div>
-                                        <div className="space-y-2">
-                                          <Label htmlFor={`temp-end-${day.id}-${rule.id}`} className="text-xs">
-                                            Fim
-                                          </Label>
-                                          <Input
-                                            id={`temp-end-${day.id}-${rule.id}`}
-                                            type="time"
-                                            value={rule.endTime}
-                                            onChange={(e) => updateTemperatureRule(day.id, rule.id, 'endTime', e.target.value)}
-                                          />
-                                        </div>
-                                        <div className="space-y-2">
-                                          <Label htmlFor={`temp-value-${day.id}-${rule.id}`} className="text-xs">
-                                            Temperatura (°C)
-                                          </Label>
-                                          <Input
-                                            id={`temp-value-${day.id}-${rule.id}`}
-                                            type="number"
-                                            min="16"
-                                            max="30"
-                                            value={rule.temperature}
-                                            onChange={(e) => updateTemperatureRule(day.id, rule.id, 'temperature', parseInt(e.target.value))}
-                                          />
-                                        </div>
-                                      </div>
-                                      <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => removeTemperatureRule(day.id, rule.id)}
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
+                            
+                            {daySchedule.timeSlots.map((slot) => (
+                              <Card key={slot.id} className="p-3">
+                                <div className="flex items-center gap-4">
+                                  <div className="grid grid-cols-2 gap-4 flex-1">
+                                    <div className="space-y-2">
+                                      <Label htmlFor={`start-time-${day.id}-${slot.id}`} className="text-xs">
+                                        Horário de Início
+                                      </Label>
+                                      <Input
+                                        id={`start-time-${day.id}-${slot.id}`}
+                                        type="time"
+                                        value={slot.startTime}
+                                        onChange={(e) => updateTimeSlot(day.id, slot.id, 'startTime', e.target.value)}
+                                      />
                                     </div>
-                                  </Card>
-                                ))}
-                              </div>
-                            )}
+                                    <div className="space-y-2">
+                                      <Label htmlFor={`end-time-${day.id}-${slot.id}`} className="text-xs">
+                                        Horário de Término
+                                      </Label>
+                                      <Input
+                                        id={`end-time-${day.id}-${slot.id}`}
+                                        type="time"
+                                        value={slot.endTime}
+                                        onChange={(e) => updateTimeSlot(day.id, slot.id, 'endTime', e.target.value)}
+                                      />
+                                    </div>
+                                  </div>
+                                  {daySchedule.timeSlots.length > 1 && (
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => removeTimeSlot(day.id, slot.id)}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                </div>
+                              </Card>
+                            ))}
                           </div>
-                        </AccordionContent>
-                      )}
-                    </AccordionItem>
-                  );
-                })}
-              </Accordion>
-            </div>
-          </div>
-
-          {/* Automação de Temperatura */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="space-y-1">
-                <Label className="text-sm font-medium">Mudança de Temperatura</Label>
-                <p className="text-xs text-muted-foreground">
-                  Ajustar temperatura automaticamente baseado no horário configurado para cada dia
-                </p>
-              </div>
-              <Switch
-                checked={temperatureChange}
-                onCheckedChange={setTemperatureChange}
-              />
-            </div>
+                        </div>
+                      </AccordionContent>
+                    )}
+                  </AccordionItem>
+                );
+              })}
+            </Accordion>
           </div>
 
           {/* Seleção de Ambientes */}
@@ -503,9 +343,6 @@ const TimeRoutineDialog = ({ children }: TimeRoutineDialogProps) => {
                             {index > 0 && " e "}das <strong>{slot.startTime}</strong> às <strong>{slot.endTime}</strong>
                           </span>
                         ))}
-                        {daySchedule.temperatureRules.length > 0 && (
-                          <span> (com {daySchedule.temperatureRules.length} regra(s) de temperatura)</span>
-                        )}
                       </div>
                     );
                   })}
