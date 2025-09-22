@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { mockEquipments } from "@/data/mockData";
+import { AddEquipmentDialog } from "@/components/equipments/AddEquipmentDialog";
 import { Search, Filter, Plus, Settings, Power } from "lucide-react";
 
 const Equipments = () => {
   const [equipments] = useState(mockEquipments);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showAddDialog, setShowAddDialog] = useState(false);
 
   const filteredEquipments = equipments.filter(
     eq => 
@@ -40,7 +42,11 @@ const Equipments = () => {
             Gerencie todos os equipamentos de climatização
           </p>
         </div>
-        <Button variant="cooling" className="gap-2">
+        <Button 
+          variant="cooling" 
+          className="gap-2"
+          onClick={() => setShowAddDialog(true)}
+        >
           <Plus className="h-4 w-4" />
           Adicionar Equipamento
         </Button>
@@ -114,6 +120,11 @@ const Equipments = () => {
           </Card>
         ))}
       </div>
+
+      <AddEquipmentDialog
+        open={showAddDialog}
+        onOpenChange={setShowAddDialog}
+      />
     </div>
   );
 };
