@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import Equipments from "./pages/Equipments";
 import Automations from "./pages/Automations";
 import Reports from "./pages/Reports";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,7 +27,7 @@ const App = () => (
             <Route path="reports" element={<Reports />} />
             <Route path="locations" element={<Dashboard />} />
             <Route path="alarms" element={<Dashboard />} />
-            <Route path="settings" element={<Dashboard />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
