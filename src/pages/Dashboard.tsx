@@ -144,16 +144,16 @@ const Dashboard = () => {
                 Locais
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2">
               {mockLocations.map((location) => (
                 <div key={location.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                  <div>
-                    <p className="font-medium">{location.name}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{location.name}</p>
                     <p className="text-sm text-muted-foreground">
                       {location.activeEquipment}/{location.equipmentCount} ativos
                     </p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right flex-shrink-0 ml-2">
                     <p className="text-sm font-medium">{location.avgTemp}°C</p>
                     <p className="text-xs text-muted-foreground">
                       {(location.totalConsumption / 1000).toFixed(1)}kW

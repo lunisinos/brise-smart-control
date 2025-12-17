@@ -37,10 +37,6 @@ const equipmentSchema = z.object({
   integration: z.enum(["BRISE", "SMART"], {
     required_error: "Selecione o tipo de integração",
   }),
-  mode: z.enum(["cool", "heat", "auto", "fan"], {
-    required_error: "Selecione o modo de operação",
-  }),
-  targetTemp: z.string().min(1, "Temperatura alvo é obrigatória"),
 });
 
 type EquipmentFormData = z.infer<typeof equipmentSchema>;
@@ -62,8 +58,6 @@ export function AddEquipmentDialog({ open, onOpenChange }: AddEquipmentDialogPro
       model: "",
       capacity: "",
       integration: undefined,
-      mode: undefined,
-      targetTemp: "",
     },
   });
 
@@ -77,10 +71,11 @@ export function AddEquipmentDialog({ open, onOpenChange }: AddEquipmentDialogPro
       console.log("Novo equipamento:", {
         ...data,
         capacity: parseInt(data.capacity),
-        targetTemp: parseInt(data.targetTemp),
         id: Math.random().toString(36).substr(2, 9),
         isOn: false,
         currentTemp: 25,
+        targetTemp: 22,
+        mode: "cool",
         energyConsumption: 0,
         efficiency: 85,
       });
@@ -105,7 +100,7 @@ export function AddEquipmentDialog({ open, onOpenChange }: AddEquipmentDialogPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Adicionar Novo Equipamento</DialogTitle>
           <DialogDescription>
@@ -179,69 +174,23 @@ export function AddEquipmentDialog({ open, onOpenChange }: AddEquipmentDialogPro
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="integration"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tipo de Integração</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o tipo" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="SMART">SMART</SelectItem>
-                        <SelectItem value="BRISE">BRISE</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="mode"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Modo de Operação</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o modo" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="cool">Refrigeração</SelectItem>
-                        <SelectItem value="heat">Aquecimento</SelectItem>
-                        <SelectItem value="auto">Automático</SelectItem>
-                        <SelectItem value="fan">Ventilação</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
             <FormField
               control={form.control}
-              name="targetTemp"
+              name="integration"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Temperatura Alvo (°C)</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="number" 
-                      placeholder="Ex: 22" 
-                      min="16" 
-                      max="30" 
-                      {...field} 
-                    />
-                  </FormControl>
+                  <FormLabel>Tipo de Integração</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="SMART">SMART</SelectItem>
+                      <SelectItem value="BRISE">BRISE</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
