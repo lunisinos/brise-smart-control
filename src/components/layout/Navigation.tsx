@@ -5,7 +5,6 @@ import {
   Wind, 
   Settings, 
   BarChart3, 
-  MapPin,
   AlertCircle,
   Zap
 } from "lucide-react";
@@ -16,7 +15,6 @@ const Navigation = () => {
   const navigation = [
     { name: "Dashboard", href: "/", icon: LayoutDashboard },
     { name: "Equipamentos", href: "/equipments", icon: Wind },
-    { name: "Locais", href: "/locations", icon: MapPin },
     { name: "Automações", href: "/automations", icon: Zap },
     { name: "Relatórios", href: "/reports", icon: BarChart3 },
     { name: "Alarmes", href: "/alarms", icon: AlertCircle },
