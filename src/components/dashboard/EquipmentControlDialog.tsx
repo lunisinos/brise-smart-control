@@ -182,13 +182,13 @@ const EquipmentControlDialog = ({
 
               {/* Power Button */}
               <div className="flex justify-center">
-                <Button
+              <Button
                   size="lg"
                   onClick={handlePowerToggle}
                   className={`rounded-full w-14 h-14 transition-all duration-300 ${
                     equipment.isOn 
                       ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg" 
-                      : "bg-muted-foreground/30 text-muted-foreground hover:bg-muted-foreground/40"
+                      : "bg-background text-muted-foreground border border-border hover:bg-muted"
                   }`}
                 >
                   <Power className="h-5 w-5" />
