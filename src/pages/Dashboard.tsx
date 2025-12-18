@@ -17,9 +17,13 @@ import { useToast } from "@/hooks/use-toast";
 
 const Dashboard = () => {
   const [equipments, setEquipments] = useState(mockEquipments);
-  const [selectedEquipment, setSelectedEquipment] = useState<any>(null);
+  const [selectedEquipmentId, setSelectedEquipmentId] = useState<string | null>(null);
   const [isControlDialogOpen, setIsControlDialogOpen] = useState(false);
   const { toast } = useToast();
+
+  const selectedEquipment = selectedEquipmentId
+    ? equipments.find((eq) => eq.id === selectedEquipmentId) ?? null
+    : null;
 
   const totalEquipments = equipments.length;
   const activeEquipments = equipments.filter(eq => eq.isOn).length;
@@ -51,11 +55,8 @@ const Dashboard = () => {
   };
 
   const handleControlEquipment = (id: string) => {
-    const equipment = equipments.find(eq => eq.id === id);
-    if (equipment) {
-      setSelectedEquipment(equipment);
-      setIsControlDialogOpen(true);
-    }
+    setSelectedEquipmentId(id);
+    setIsControlDialogOpen(true);
   };
 
   const handleEquipmentUpdate = (id: string, updates: any) => {

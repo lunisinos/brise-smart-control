@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -62,6 +62,10 @@ const EquipmentControlDialog = ({
   const [timerMinutes, setTimerMinutes] = useState(0);
   const [timerEnabled, setTimerEnabled] = useState(false);
   const [isManualMode, setIsManualMode] = useState(true);
+  useEffect(() => {
+    setLocalTemp(equipment?.targetTemp || 22);
+    setLocalMode(equipment?.mode || "cool");
+  }, [equipment?.id]);
 
   if (!equipment) return null;
 
