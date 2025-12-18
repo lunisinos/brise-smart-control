@@ -12,7 +12,7 @@ import {
   MapPin
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import { useToast } from "@/hooks/use-toast";
 
 const Dashboard = () => {
@@ -138,60 +138,34 @@ const Dashboard = () => {
         {/* Sidebar */}
         <div className="space-y-4">
           {/* Locations Overview */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
+          <Card className="transition-all duration-300 hover:shadow-elevated border-cooling/20 bg-gradient-to-br from-cooling-light/10 to-transparent">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 Locais
               </CardTitle>
+              <MapPin className="h-4 w-4 text-cooling" />
             </CardHeader>
-            <CardContent className="space-y-2">
-              {mockLocations.map((location) => (
-                <div key={location.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{location.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {location.activeEquipment}/{location.equipmentCount} ativos
-                    </p>
-                  </div>
-                  <div className="text-right flex-shrink-0 ml-2">
-                    <p className="text-sm font-medium">{location.avgTemp}°C</p>
-                    <p className="text-xs text-muted-foreground">
-                      {(location.totalConsumption / 1000).toFixed(1)}kW
-                    </p>
-                  </div>
-                </div>
-              ))}
+            <CardContent>
+              <div className="text-2xl font-bold">{mockLocations.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Ambientes monitorados
+              </p>
             </CardContent>
           </Card>
 
           {/* Recent Alerts */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4" />
+          <Card className="transition-all duration-300 hover:shadow-elevated border-heating/20 bg-gradient-to-br from-heating-light/10 to-transparent">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 Alertas Recentes
               </CardTitle>
+              <AlertTriangle className="h-4 w-4 text-heating" />
             </CardHeader>
-            <CardContent className="space-y-3">
-              {mockAlerts.map((alert) => (
-                <div key={alert.id} className="space-y-2">
-                  <div className="flex items-start gap-2">
-                    <Badge variant={
-                      alert.type === "critical" ? "destructive" : 
-                      alert.type === "warning" ? "secondary" : "outline"
-                    }>
-                      {alert.type}
-                    </Badge>
-                    <div className="flex-1">
-                      <p className="text-sm">{alert.message}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(alert.timestamp).toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <CardContent>
+              <div className="text-2xl font-bold">{mockAlerts.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Requer atenção
+              </p>
             </CardContent>
           </Card>
         </div>
